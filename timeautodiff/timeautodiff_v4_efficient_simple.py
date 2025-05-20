@@ -640,7 +640,7 @@ def train_autoencoder(processed_data, channels, hidden_size, num_layers, lr, wei
                 patience += 1
                 if patience == 10 and beta > min_beta:
                     beta = beta * lambd
-            progress.update(training_task, advance=1)
+            # progress.update(training_task, advance=1)
 
 
     # Final evaluation
