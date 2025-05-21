@@ -118,7 +118,7 @@ class DataFrameParser(object):
 
         # sort through columns in dataframe.
         for column, datatype in column_to_dtype.items():
-            if datatype in ['O', '<U32']:
+            if datatype in ['O', '<U32','bool']:
                 cardinality = self.new_dataframe[column].nunique(dropna=False)
                 if cardinality <= 2:
                     self.binary_columns.append(column)
@@ -131,7 +131,7 @@ class DataFrameParser(object):
                 self.binary_columns.append(column)
                 self.need_bin_int.append(column)
 
-            elif np.issubdtype(datatype, np.float64) and self.new_dataframe[column].nunique() <= 2:
+            elif (np.issubdtype(datatype, np.float64) or np.issubdtype(datatype, np.float32)) and self.new_dataframe[column].nunique() <= 2:
                 self.binary_columns.append(column)
                 self.need_bin_int.append(column)
                 
@@ -140,7 +140,7 @@ class DataFrameParser(object):
                 self.categorical_columns.append(column)
                 self.need_int_encoding.append(column)
             
-            elif np.issubdtype(datatype, np.float64) and self.new_dataframe[column].nunique() <= 25 \
+            elif (np.issubdtype(datatype, np.float64) or np.issubdtype(datatype, np.float32)) and self.new_dataframe[column].nunique() <= 25 \
                     and self.new_dataframe[column].nunique() >= 3:
                 self.categorical_columns.append(column)
                 self.need_int_encoding.append(column)
