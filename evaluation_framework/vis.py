@@ -25,7 +25,7 @@ def plot_distribution_comparisons(real_data, generated_data,features_names,subse
     n_features = real_data.shape[2]
     
     # Determine the number of rows and columns based on the number of features
-    n_cols = 6
+    n_cols = 5
     n_rows = (n_features + n_cols - 1) // n_cols  # This ensures enough rows to fit all features
 
     # Plot distributions for each feature
