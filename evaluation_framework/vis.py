@@ -43,7 +43,11 @@ def plot_distribution_comparisons(real_data, generated_data,features_names,subse
         
     plt.suptitle(f'Distribution Comparison of Real and Generated Data ({subset})')
     plt.tight_layout()
-    return fig
+        
+    # Ensure only this figure is shown
+    plt.show()
+    plt.close(fig)  # Close after showing
+    return
 
 def plot_temporal_statistics(real_data, generated_data, features_names, subset):
     """Plot mean and std over time for each feature"""
@@ -51,7 +55,7 @@ def plot_temporal_statistics(real_data, generated_data, features_names, subset):
     time_steps = np.arange(real_data.shape[1])
     
     # Determine the number of rows and columns based on the number of features
-    n_cols = 6
+    n_cols = 5
     n_rows = (n_features + n_cols - 1) // n_cols  # This ensures enough rows to fit all features
 
     # Plot distributions for each feature
@@ -84,7 +88,7 @@ def plot_temporal_statistics(real_data, generated_data, features_names, subset):
     
     plt.suptitle(f'Temporal Statistics of Real and Generated Data ({subset})')
     plt.tight_layout()
-    return fig
+    return
 
 from scipy import stats
 
@@ -114,7 +118,27 @@ def compare_distributions(real_data, generated_data, features_names):
     
     return pd.DataFrame(results)
 
-def plot_correlation_matrices(real_data, generated_data,features_names,subset):
+# def plot_correlation_matrices(real_data, generated_data,features_names,subset):
+#     """Compare feature correlations between real and generated data"""
+#     # Calculate mean correlations across time steps
+#     real_corr = np.mean([np.corrcoef(real_data[:, t, :].T) 
+#                         for t in range(real_data.shape[1])], axis=0)
+#     gen_corr = np.mean([np.corrcoef(generated_data[:, t, :].T) 
+#                        for t in range(generated_data.shape[1])], axis=0)
+    
+#     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    
+#     sns.heatmap(real_corr, ax=ax1, cmap='coolwarm', vmin=-1, vmax=1)
+#     ax1.set_title('Real Data Correlations')
+    
+#     sns.heatmap(gen_corr, ax=ax2, cmap='coolwarm', vmin=-1, vmax=1)
+#     ax2.set_title('Generated Data Correlations')
+#     plt.suptitle(f'Correlation Matrices of Real and Generated Data ({subset})')
+
+#     plt.tight_layout()
+#     return fig
+
+def plot_correlation_matrices(real_data, generated_data, features_names, subset):
     """Compare feature correlations between real and generated data"""
     # Calculate mean correlations across time steps
     real_corr = np.mean([np.corrcoef(real_data[:, t, :].T) 
@@ -124,15 +148,20 @@ def plot_correlation_matrices(real_data, generated_data,features_names,subset):
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     
-    sns.heatmap(real_corr, ax=ax1, cmap='coolwarm', vmin=-1, vmax=1)
+    # Plot real data correlations with feature names
+    sns.heatmap(real_corr, ax=ax1, cmap='coolwarm', vmin=-1, vmax=1,
+                xticklabels=features_names, yticklabels=features_names)
     ax1.set_title('Real Data Correlations')
     
-    sns.heatmap(gen_corr, ax=ax2, cmap='coolwarm', vmin=-1, vmax=1)
+    # Plot generated data correlations with feature names
+    sns.heatmap(gen_corr, ax=ax2, cmap='coolwarm', vmin=-1, vmax=1,
+                xticklabels=features_names, yticklabels=features_names)
     ax2.set_title('Generated Data Correlations')
+    
     plt.suptitle(f'Correlation Matrices of Real and Generated Data ({subset})')
-
     plt.tight_layout()
-    return fig
+    return
+
 def find_tstr_timestamp(out_path,iter_index):
     for entry in os.listdir(out_path):
         if entry.endswith(f"_iter{iter_index}"):  # e.g. 
@@ -225,7 +254,7 @@ def evaluate_synthetic_data(real_data, synth_data_list, feature_names, subset, r
             # tensor_x_synth = synth_data.clone().detach().to(device)
             tensor_x_real = real_data
             tensor_x_synth = synth_data
-            for i in trange(disc_counts):
+            for i in range(disc_counts):
                 if i == 0 and j == 0:
                     print("#### Discriminative scores: ####")
                 discriminator = model_zoo.GRUDiscriminator(dim, hidden_dim, num_layers)
@@ -245,6 +274,7 @@ def evaluate_synthetic_data(real_data, synth_data_list, feature_names, subset, r
                     print(f'Synth Data {j}, Iter {i}: {discriminative_score:.4f},', end=' ')
                 else:
                     print(f'Synth Data {j}, Iter {i}, overall : {discriminative_score["overall"]:.4f},', end=' ')
+            print()
         print()
 
 
@@ -257,7 +287,7 @@ def evaluate_synthetic_data(real_data, synth_data_list, feature_names, subset, r
         num_layers = 2
         
         for j,synth_data in enumerate(synth_data_list):
-            for i in trange(pred_counts):
+            for i in range(pred_counts):
                 if i == 0 and j == 0:
                     print("#### Predictive scores: ####")
                 predictor = model_zoo.GRUPredictor(dim, hidden_dim)
@@ -275,6 +305,7 @@ def evaluate_synthetic_data(real_data, synth_data_list, feature_names, subset, r
                     print(f'Synth Data {j}, Iter {i}: {predictive_score:.4f},', end=' ')
                 else:
                     print(f'Synth Data {j}, Iter {i}, overall : {predictive_score["overall"]:.4f},', end=' ')
+            print()
         print()
         # mean, sigma = metric_utils.display_scores(all_predictive_scores)
         # results['pred'] = {'mean': mean, 'sigma': sigma}
@@ -486,14 +517,14 @@ def plot_patient_time_series_snapshots(real_data, _synth_data, all_features_name
     num_features = len(features_to_plot)
 
     for label in patient_indices:
-        fig, axes = plt.subplots((num_features + 2) // 3, 3, figsize=(20, 10))
+        fig, axes = plt.subplots((num_features) // 2, 2, figsize=(15, 10))
         axes = axes.flatten()
         column_name = features_to_plot
 
         for i, feature in enumerate(column_name):
             feature_index = all_features_names.tolist().index(feature)
-            axes[i].plot(real_data[label, :, feature_index].cpu(), marker='o', linestyle='-', color='b', label=f'Real {feature}')
-            axes[i].plot(_synth_data[label, :, feature_index].numpy(), marker='o', linestyle='-', color='r', label=f'Conditionally Generated {feature}')
+            axes[i].plot(real_data[label, :, feature_index], marker='o', linestyle='-', color='b', label=f'Real {feature}')
+            axes[i].plot(_synth_data[label, :, feature_index], marker='o', linestyle='-', color='r', label=f'Conditionally Generated {feature}')
             axes[i].set_xlabel('Time')
             axes[i].set_ylabel(f'{feature}')
             axes[i].grid(True)
