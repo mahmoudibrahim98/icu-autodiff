@@ -18,12 +18,7 @@ pyarrow = "^20.0.0"
 wandb = "^0.19.11"
 tqdm = "^4.67.1"
 rich = "^14.0.0"
-ipywidgets = "^8.1.7"
 
-
-[tool.poetry.group.dev.dependencies]
-jupyterlab = "^4.4.3"
-ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]
