@@ -162,7 +162,7 @@ def load_independent_models(down_train_X, down_val_X, down_train_y, down_val_y,n
 
 def load_models_only(latest_timestamp, task_name, data_name,checkpoint_vae = None,checkpoint_diff = None, gen_model = 'TimeAutoDiff'):
 
-    latest_dir = f'outputs/{task_name}/{data_name}/{gen_model}/{latest_timestamp}'
+    latest_dir = f'notebooks/outputs/{task_name}/{data_name}/{gen_model}/{latest_timestamp}'
     output_dir = latest_dir
 
 
