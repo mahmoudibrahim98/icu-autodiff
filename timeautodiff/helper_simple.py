@@ -21,8 +21,6 @@ print(torch.cuda.is_available())
 
 from absl import flags
 
-from itables import init_notebook_mode
-init_notebook_mode(all_interactive=True)
 import timeautodiff.processing_simple as processing
 import timeautodiff.timeautodiff_v4_efficient_simple as timeautodiff
 import evaluation_framework.metric_utils as metric_utils
