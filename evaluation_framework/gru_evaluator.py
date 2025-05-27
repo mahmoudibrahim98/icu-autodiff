@@ -259,9 +259,9 @@ class GRUEvaluator():
             train_loss = 0
 
             # Batch-wise tqdm for training data
-            batch_bar = tqdm(train_dataloader, desc=f"Epoch {epoch+1}/{self.epochs}", leave=False)
+            # batch_bar = tqdm(train_dataloader, desc=f"Epoch {epoch+1}/{self.epochs}", leave=False)
 
-            for train_data, train_label in batch_bar:
+            for train_data, train_label in train_dataloader:
                 train_data, train_label = train_data.to(self.device), train_label.to(self.device)
                 optimizer.zero_grad()
                 y_hat_logit, y_hat = self.model(train_data)
@@ -279,9 +279,9 @@ class GRUEvaluator():
                 train_loss += loss.item()
 
                 # Update batch progress bar with current batch loss
-                batch_bar.set_postfix(loss=loss.item())
+                # batch_bar.set_postfix(loss=loss.item())
 
-            batch_bar.close()  # Close wha progress bar
+            # batch_bar.close()  # Close wha progress bar
 
             # Log train loss for the epoch
             avg_train_loss = train_loss / len(train_dataloader)
