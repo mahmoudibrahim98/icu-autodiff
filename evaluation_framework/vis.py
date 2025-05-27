@@ -534,3 +534,52 @@ def plot_patient_time_series_snapshots(real_data, _synth_data, all_features_name
         plt.show()
         if save:
             fig.savefig(os.path.join(filepath, f'patient_{label}'))  # Save as PNG
+
+
+        
+def plot_real_time_series_snapshots(real_data, all_features_names, output_dir, save=False, k=1, patient_indices=None,
+                                    features_to_plot=None):
+    """
+    Plots time series snapshots for specified patients.
+
+    Parameters:
+    - real_data: tensor, containing the real data.
+    - _synth_data: tensor, containing the synthetic data.
+    - all_features_names: list, names of all the  features.
+    - output_dir: str, directory to save the plots.
+    - save: bool, whether to save the plots.
+    - k: int, number of random patients to plot if patient_indices is None.
+    - patient_indices: list, specific patient indices to plot. If None, k random patients will be selected.
+    - features_to_plot: list, specific features to plot. If None, all important features will be plotted.
+    """
+    filepath = os.path.join(output_dir, 'figures')
+    os.makedirs(filepath, exist_ok=True)
+
+    if patient_indices is None:
+        patient_indices = np.random.choice(real_data.shape[0], k, replace=False)
+
+    if features_to_plot is None:
+        features_to_plot = all_features_names
+    else:
+        features_to_plot = [feature for feature in features_to_plot if feature in all_features_names]
+
+    num_features = len(features_to_plot)
+
+    for label in patient_indices:
+        fig, axes = plt.subplots((num_features) // 2, 2, figsize=(15, 10))
+        axes = axes.flatten()
+        column_name = features_to_plot
+
+        for i, feature in enumerate(column_name):
+            feature_index = all_features_names.tolist().index(feature)
+            axes[i].plot(real_data[label, :, feature_index], marker='o', linestyle='-', color='b', label=f'Real {feature}')
+            axes[i].set_xlabel('Time')
+            axes[i].set_ylabel(f'{feature}')
+            axes[i].grid(True)
+            axes[i].legend(loc='upper left')
+
+        fig.suptitle(f'Patient {label} Time Series')
+        plt.show()
+        if save:
+            fig.savefig(os.path.join(filepath, f'patient_{label}'))  # Save as PNG
+

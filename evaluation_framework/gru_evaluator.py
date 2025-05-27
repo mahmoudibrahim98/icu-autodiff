@@ -272,7 +272,6 @@ class GRUEvaluator():
                     y_hat = y_hat.unsqueeze(0)
                 elif train_label.dim() == 0 and y_hat.dim() > 0:
                     train_label = train_label.unsqueeze(0)
-                    
                 loss = criterion(y_hat, train_label)
                 loss.backward()
                 optimizer.step()

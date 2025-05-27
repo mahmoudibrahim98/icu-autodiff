@@ -376,7 +376,6 @@ class TRTS(Metric):
             results = populate_kl_divergence_dict(results, real_preds_test, synth_preds_test, 'overall', prefix='trts_')
             
             combinations = pd.DataFrame(demographic_data).drop_duplicates()
-            print(combinations.shape)
             # Evaluate each combination
             for _, row in combinations.iterrows():
                 # Create mask for this demographic combination
