@@ -1,7 +1,6 @@
 import sys
 # TODO
-dir = '/home/vito/ibrahimm/projects/AI4Health/notebooks/ibrahimm/Generative-Models/ehr/Synthetic-data-experiments'
-sys.path.append(dir)
+
 from datetime import datetime, timedelta
 import wandb
 import pandas as pd

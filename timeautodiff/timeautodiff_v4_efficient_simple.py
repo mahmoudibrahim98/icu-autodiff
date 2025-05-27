@@ -9,13 +9,12 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt
 import numpy as np
-import timeautodiff.process_edited as pce
 from torch.optim import Adam
 import math
 from rich.progress import Progress
 import os 
 import wandb
-import enhanced_timeautodiff.processing_simple as processing
+import timeautodiff.processing_simple as processing
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -536,7 +535,7 @@ def evaluate_model(ae, processed_data, device, max_gpu_chunk=100):
 
 def train_autoencoder(processed_data, channels, hidden_size, num_layers, lr, weight_decay, 
                      n_epochs, batch_size, min_beta, max_beta, emb_dim, time_dim, lat_dim, 
-                     device, dir, checkpoints=False, mmd_weight = 0.1, consistency_weight = 0.1):
+                     device, dir, checkpoints=False, mmd_weight = 0.1, consistency_weight = 0.1, use_wandb=False):
     N, seq_len, input_size = processed_data.shape
     
         
@@ -623,15 +622,16 @@ def train_autoencoder(processed_data, channels, hidden_size, num_layers, lr, wei
             progress.update(training_task, advance=1, description=f"Epoch {epoch}/{n_epochs} - Loss: {loss_Auto.item():.4f}")
             if checkpoints and epoch % 10000 == 0 and epoch != 0 and epoch != n_epochs - 1:
                 save_checkpoint(epoch)
-            wandb.log({
-                "auto_epoch": epoch, 
-                "auto_loss": loss_Auto.item() if hasattr(loss_Auto, 'item') else loss_Auto, 
-                "disc_loss": disc_loss.item() if hasattr(disc_loss, 'item') else disc_loss, 
-                "num_loss": num_loss.item() if hasattr(num_loss, 'item') else num_loss, 
-                "KL_loss": loss_kld.item() if hasattr(loss_kld, 'item') else loss_kld,
-                "mmd_loss": mmd_loss.item() if hasattr(mmd_loss, 'item') else mmd_loss,
-                "consistency_loss": consistency_loss.item() if hasattr(consistency_loss, 'item') else consistency_loss
-            })
+            if use_wandb:
+                wandb.log({
+                    "auto_epoch": epoch, 
+                    "auto_loss": loss_Auto.item() if hasattr(loss_Auto, 'item') else loss_Auto, 
+                    "disc_loss": disc_loss.item() if hasattr(disc_loss, 'item') else disc_loss, 
+                    "num_loss": num_loss.item() if hasattr(num_loss, 'item') else num_loss, 
+                    "KL_loss": loss_kld.item() if hasattr(loss_kld, 'item') else loss_kld,
+                    "mmd_loss": mmd_loss.item() if hasattr(mmd_loss, 'item') else mmd_loss,
+                    "consistency_loss": consistency_loss.item() if hasattr(consistency_loss, 'item') else consistency_loss
+                })
             
             if loss_Auto < best_train_loss:
                 best_train_loss = loss_Auto
@@ -916,7 +916,7 @@ import wandb
 # Train Diffusion Model with MMD and Consistency Regularization
 def train_diffusion(latent_features, cond_tensor, time_info, hidden_dim, num_layers, 
                     diffusion_steps, n_epochs, out_dir, checkpoints=False, num_classes=None,
-                    mmd_weight = 0.1, consistency_weight = 0.1, device = 'cuda'):
+                    mmd_weight = 0.1, consistency_weight = 0.1, device = 'cuda', use_wandb=False):
     emb_dim = 128
     input_size = latent_features.shape[2]
     time_dim = time_info.shape[2]
@@ -946,8 +946,8 @@ def train_diffusion(latent_features, cond_tensor, time_info, hidden_dim, num_lay
     # Add curriculum learning parameters
     warmup_steps = 1000
     curriculum_weight = lambda step: min(1.0, step / warmup_steps)
-
-    wandb.watch(model, log="all")
+    if use_wandb:
+        wandb.watch(model, log="all")
 
     with Progress() as progress:
         training_task = progress.add_task("[red]Training...", total=n_epochs)
@@ -983,7 +983,8 @@ def train_diffusion(latent_features, cond_tensor, time_info, hidden_dim, num_lay
             ema.step_ema(ema_model, model)
     
             progress.update(training_task, advance=1, description=f"Epoch {epoch}/{n_epochs} - Loss: {total_loss.item():.4f}")
-            wandb.log({"diff_epoch": epoch, "diff_loss": total_loss.item()})
+            if use_wandb:
+                wandb.log({"diff_epoch": epoch, "diff_loss": total_loss.item()})
             
             if checkpoints and epoch % 10000 == 0 and epoch != 0:
                 checkpoint_dir = os.path.join(out_dir, "diff_checkpoints") 
@@ -995,8 +996,8 @@ def train_diffusion(latent_features, cond_tensor, time_info, hidden_dim, num_lay
     # Save final models
     model.save_model(os.path.join(out_dir, "diffusion"))
     ema_model.save_model(os.path.join(out_dir, "diffusion_ema"))
-    
-    wandb.finish()
+    if use_wandb:
+        wandb.finish()
     return model
 
 #####################################################################################################################
